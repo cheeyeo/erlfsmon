@@ -1,20 +1,30 @@
 -module(erlfsmon).
--export([subscribe/0, known_events/0, path/0, start_logger/0]).
+-export([subscribe/0, subscribe/2, known_events/0, path/0, start_logger/0]).
+
+subscribe(Module, Arg) ->
+  gen_event:add_handler(erlfsmon_events, Module, [Arg]).
+
 
 subscribe() ->
-    gen_event:add_sup_handler(erlfsmon_events, {erlfsmon_event_bridge, self()}, [self()]).
+  gen_event:add_sup_handler(erlfsmon_events, {erlfsmon_event_bridge, self()}, [self()]).
 
 known_events() ->
     gen_server:call(erlfsmon, known_events).
 
 path() ->
-    case application:get_env(erlfsmon, path) of
-        {ok, P} -> filename:absname(P);
-        undefined -> filename:absname("")
-    end.
+  % io:format("PATH IS ~p~n", application:get_env(erlfsmon, path)),
+  case application:get_env(erlfsmon, path) of
+      {ok, P} -> filename:absname(P);
+      undefined -> filename:absname("")
+  end.
+
+% start_logger() ->
+%     spawn(fun() -> subscribe(), logger_loop() end).
+
+
 
 start_logger() ->
-    spawn(fun() -> subscribe(), logger_loop() end).
+    spawn(fun() -> logger_loop() end).
 
 logger_loop() ->
     receive
