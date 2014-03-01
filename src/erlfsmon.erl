@@ -1,7 +1,8 @@
 -module(erlfsmon).
--export([subscribe/0, subscribe/2, known_events/0, path/0, start_logger/0]).
+-export([subscribe/0, subscribe/3, known_events/0, path/0, start_logger/0]).
 
-subscribe(Module, Arg) ->
+subscribe(Module, Path, Arg) ->
+  application:set_env(erlfsmon, path, Path),
   gen_event:add_handler(erlfsmon_events, Module, [Arg]).
 
 
@@ -18,13 +19,8 @@ path() ->
       undefined -> filename:absname("")
   end.
 
-% start_logger() ->
-%     spawn(fun() -> subscribe(), logger_loop() end).
-
-
-
 start_logger() ->
-    spawn(fun() -> logger_loop() end).
+    spawn(fun() -> subscribe(), logger_loop() end).
 
 logger_loop() ->
     receive
